@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title><span data-translate-key="page.title">Takvim Uygulaması</span></title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        .api-section {
+            display: none;
+        }
+        
+
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+
+    <div class="nav-language-selector">
+        <label for="global_regionId"><span data-translate-key="region.label">📍 Bölge:</span></label>
+        <select id="global_regionId" onchange="handleFilterChange()"></select>
+    </div>
+
+    <div class="nav-language-selector">
+        <label for="global_personTypeId"><span data-translate-key="persontype.label">👤 Kişi:</span></label>
+        <select id="global_personTypeId" onchange="handleFilterChange()"></select>
+    </div>
+
+    <button class="nav-btn" onclick="showSection('is-gunu-hesaplama', this)" data-translate-key="nav.workday">İş Günü Hesaplama</button>
+    <button  class="nav-btn"id="nav-tatil-ozeti" onclick="showSection('tatil-ozeti', this)" data-translate-key="nav.summary">Tatil Özeti</button>
+    <button  class="nav-btn"id="nav-sabit-tatiller" onclick="showSection('sabit-tatiller', this)" data-translate-key="nav.fixed">Sabit Tatiller</button>
+    <button class="nav-btn" onclick="showSection('uzun-hafta-sonu', this)" data-translate-key="nav.longweekend">Birleşmiş Tatil Günleri</button>
+
+    <div class="nav-language-selector">
+        <label for="languageSelector"><span data-translate-key="language.label">Dil:</span></label>
+        <select id="languageSelector" onchange="handleLanguageChange(this)">
+            <option value="TR" data-translate-key="language.option.tr">Türkçe</option>
+            <option value="ENG" data-translate-key="language.option.gb">English</option>
+            <option value="AR" data-translate-key="language.option.ar">العربية</option>
+            <option value="DE" data-translate-key="language.option.de">Deutsch</option>
+        </select>
+    </div>
+
+    <button id="theme-toggle" class="theme-toggle-button">🌙</button>
+</div>
+
+<div class="container">
+    <div id="welcome-section" style="text-align:center; padding: 40px; font-size: 1.1em; color: #2c3e50;">
+        <h2><span data-translate-key= "anasayfa.label">🗓️ Takvim Uygulamasına Hoş Geldiniz</span></h2>
+        <p><span data-translate-key="anasayfa.aciklama">Lütfen üstteki menüden görmek istediğiniz bölümü seçin.</span></p>
+        <p><span data-translate-key="anasayfa2.aciklama">Önce <span style="color:#5b4fff; font-weight:bold;">Bölge</span> ve <span style="color:#5b4fff; font-weight:bold;">Kişi</span> seçimlerinizi yapın. </span></span></p>
+    </div>
+
+
+<div id="is-gunu-hesaplama" class="api-section">
+    <h2><span data-translate-key="workday.title">İş Günü Hesaplama</span></h2>
+
+    <div class="workday-flex-container">
+        <div class="workday-form">
+            <div class="form-group">
+                <label for="wg_startDate"><span data-translate-key="workday.startDate.label">Başlangıç Tarihi:</span></label>
+                <input type="date" id="wg_startDate" />
+
+                <label for="wg_endDate"><span data-translate-key="workday.endDate.label">Bitiş Tarihi:</span></label>
+                <input type="date" id="wg_endDate" />
+
+                <label for="isIncluded"><span data-translate-key="for.included">Son Gün Dahil Mi:</span></label>
+                <input type="integer" id="isIncluded" />
+
+                <button onclick="getWorkdayCount()" style="margin-top: 15px;">
+                    <span data-translate-key="workday.calculate.button">Hesapla</span>
+                </button>
+
+                <div id="workday-count-result" style="margin-top: 20px; font-weight: bold; font-size: 1.1em; color: #2c3e50;"></div>
+            </div>
+        </div>
+
+        <div class="workday-calendar" id="calendar-view-container">
+            <!-- Calendar will be dynamically injected here -->
+        </div>
+    </div>
+</div>
+
+
+    <div id="tatil-ozeti" class="api-section">
+        <h2><span data-translate-key="holidaysummary.title">Tüm Tatiller</span></h2>
+        <div class="form-grid">
+            <div class="form-group">
+            
+            </div>
+        </div>
+        <div id="holiday-summary-result"></div>
+    </div>
+
+
+
+    <div id="sabit-tatiller" class="api-section">
+        <h2><span data-translate-key="fixedholidays.title">Sabit Tatiller (Yıla Göre)</span></h2>
+        <div class="form-grid">
+           
+           
+        </div>
+        <div id="fixed-holiday-result"></div>
+    </div>
+
+ 
+
+    <div id="uzun-hafta-sonu" class="api-section">
+            <h2><span data-translate-key="longweekend.title">Birleşmiş Tatil Günleri Bulma</span></h2>
+            <div class="form-grid">
+                <div class="form-group"><label for="lw_year"><span data-translate-key="longweekend.year.label">Yıl:</span></label><input type="number" id="lw_year" value="2025"></div>
+                
+                <div class="form-group"><button onclick="findLongWeekends()"><span data-translate-key="longweekend.find.button">Fırsatları Bul</span></button></div>
+            </div>
+            <div id="long-weekend-result"></div>
+        </div>
+
+</div>
+
+
+<button id="chat-toggle-button" onclick="toggleChat()">💬</button>
+<div id="chat-container" class="hidden">
+    
+    <div id="chat-header" ><span data-translate-key="yardımcı.chat">💬 Yardımcı Chat</span><button id="chat-close-button" onclick="toggleChat()">x</button></div>
+    <div id="chat-messages"></div>
+    <div id="chat-input-area">
+        <input type="text" id="chat-input" placeholder=" ..." />
+        <button onclick="sendMessage()"><span data-translate-key="gönder">Gönder</span></button>
+    </div>
+    <div id="resize-handle"></div> <!-- BURAYA EKLE -->
+     <!-- Resize handles -->
+    <div id="resize-handle-e"></div>  <!-- sağ kenar -->
+    <div id="resize-handle-w"></div>  <!-- sol kenar -->
+    <div id="resize-handle-n"></div>  <!-- üst kenar -->
+    <div id="resize-handle-s"></div>  <!-- alt kenar -->
+</div>
+
+
+<script src="script.js"></script>
+
+<script>
+    async function sendMessage() {
+        const input = document.getElementById('chat-input');
+        const message = input.value.trim();
+        input.value = '';
+
+        if (!message) return;
+
+        // Seçilen değerleri al
+        const regionId = document.getElementById('global_regionId').value;
+        const personTypeId = document.getElementById('global_personTypeId').value;
+
+        // Kullanıcının mesajını göster
+        const chat = document.getElementById('chat-messages');
+        chat.innerHTML += `<div><strong>Sen:</strong> ${message}</div>`;
+
+        // Sunucuya gönder (seçilen değerlerle birlikte)
+        const res = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                message: message,
+                regionId: regionId,
+                personTypeId: personTypeId
+            })
+        });
+
+        const data = await res.json();
+
+        // Bot cevabını göster
+        chat.innerHTML += `<div><strong>Bot:</strong> ${data.reply}</div>`;
+    }
+
+     function toggleChat() {
+        const chat = document.getElementById("chat-container");
+        const toggleBtn = document.getElementById("chat-toggle-button");
+
+        if (chat.classList.contains("hidden")) {
+            chat.classList.remove("hidden");
+            toggleBtn.style.display = "none";
+        } else {
+            chat.classList.add("hidden");
+            toggleBtn.style.display = "block";
+        }
+    }
+
+    // Sayfa yüklendiğinde buton görünsün mü? İstersen buraya koyabilirsin:
+    document.getElementById("chat-toggle-button").style.display = "block";
+;
+
+</script>
+
+
+<footer class="footer">
+  <div class="footer-content">
+    <p>&copy; 2025 Takvim Uygulaması. Tüm hakları saklıdır.</p>
+  
+  </div>
+</footer>
+
+
+</body>
+</html>
